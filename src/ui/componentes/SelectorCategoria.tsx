@@ -15,6 +15,8 @@ interface Props {
   alCambiar: (id: number) => void;
   etiqueta?: string;
   error?: string;
+  /** Qué decir si la búsqueda no encuentra nada. */
+  textoSinResultados?: string;
 }
 
 /**
@@ -23,7 +25,7 @@ interface Props {
  * cortada dentro del panel lateral.
  */
 export const SelectorCategoria = forwardRef<HTMLInputElement, Props>(function SelectorCategoria(
-  { categorias, valor, alCambiar, etiqueta = 'Categoría', error },
+  { categorias, valor, alCambiar, etiqueta = 'Categoría', error, textoSinResultados = 'No hay categorías con ese nombre.' },
   ref,
 ) {
   const id = useId();
@@ -137,7 +139,7 @@ export const SelectorCategoria = forwardRef<HTMLInputElement, Props>(function Se
           className="mt-1 max-h-80 overflow-y-auto rounded-lg border-[1.5px] border-borde bg-superficie"
           onMouseDown={(e) => e.preventDefault()}
         >
-          {grupos.length === 0 && <p className="p-3 text-texto-suave">No hay categorías con ese nombre.</p>}
+          {grupos.length === 0 && <p className="p-3 text-texto-suave">{textoSinResultados}</p>}
           {grupos.map((grupo) => (
             <div key={grupo.tipo} role="group" aria-label={grupo.titulo}>
               <p className={`sticky top-0 bg-superficie-2 px-3 py-1 font-bold ${grupo.color}`}>{grupo.titulo}</p>

@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import type { Tipo } from '../../lib/calculos';
 import { erroresPorCampo, esquemaMovimiento, type DatosMovimiento } from '../../lib/esquemas';
 import {
   fechaDeHoy,
@@ -9,6 +10,8 @@ import {
   sumarDias,
 } from '../../lib/formato';
 import {
+  categoriasDelTipo,
+  etiquetaGuardar as etiquetaDelTipo,
   indiceDeDescripciones,
   posiblesDuplicados,
   quitarPrefijoRevisar,
@@ -39,11 +42,18 @@ function recordarCuenta(id: number): void {
   }
 }
 
+const TIPOS: { tipo: Tipo; titulo: string; activo: string; monto: string }[] = [
+  { tipo: 'Gasto', titulo: 'Gasto', activo: 'bg-gasto', monto: 'text-gasto' },
+  { tipo: 'Ingreso', titulo: 'Ingreso', activo: 'bg-ingreso', monto: 'text-ingreso' },
+  { tipo: 'Traspaso', titulo: 'Traspaso', activo: 'bg-traspaso', monto: 'text-traspaso' },
+];
+
 interface Props {
   /** Si viene, edita ese movimiento; si no, anota uno nuevo. */
   movimiento?: Movimiento;
   alGuardar: (datos: DatosMovimiento) => Promise<void>;
-  etiquetaGuardar: string;
+  /** Sin etiqueta, el botón dice qué se va a guardar: "Guardar ingreso". */
+  etiquetaGuardar?: string;
   extras?: ReactNode;
 }
 
@@ -60,6 +70,7 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
   const [montoTexto, setMontoTexto] = useState(movimiento ? formatearMoneda(movimiento.monto) : '');
   const [descripcion, setDescripcion] = useState(movimiento?.descripcion ?? '');
   const [categoriaId, setCategoriaId] = useState<number | null>(movimiento?.categoriaId ?? null);
+  const [tipo, setTipo] = useState<Tipo>(() => (movimiento && categoriaPorId.get(movimiento.categoriaId)?.tipo) || 'Gasto');
   const [cuentaId, setCuentaId] = useState<number | null>(() => {
     if (movimiento) return movimiento.cuentaId;
     const recordada = leerUltimaCuenta();
@@ -73,6 +84,7 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
   // Lo que la persona eligió a mano no se pisa con las sugerencias.
   const eligioCategoria = useRef(esNuevo ? false : true);
   const eligioCuenta = useRef(esNuevo ? false : true);
+  const eligioTipo = useRef(esNuevo ? false : true);
 
   const refMonto = useRef<HTMLInputElement>(null);
   const refDescripcion = useRef<HTMLInputElement>(null);
@@ -95,10 +107,26 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
   const recordatorio = recordatorioDobleConteo(categoria?.rol);
   const hoy = fechaDeHoy();
   const esFutura = fecha > hoy;
+  const categoriasVisibles = useMemo(() => categoriasDelTipo(categorias, tipo), [categorias, tipo]);
+  const colorMonto = TIPOS.find((t) => t.tipo === tipo)?.monto ?? '';
+
+  function alCambiarTipo(nuevo: Tipo) {
+    eligioTipo.current = true;
+    setTipo(nuevo);
+    if (categoria?.tipo !== nuevo) {
+      setCategoriaId(null);
+      eligioCategoria.current = false;
+    }
+  }
 
   function alElegirSugerencia(sugerencia: SugerenciaDescripcion) {
     setDescripcion(sugerencia.descripcion);
-    if (!eligioCategoria.current) setCategoriaId(sugerencia.categoriaId);
+    const sugerida = categoriaPorId.get(sugerencia.categoriaId);
+    // La descripción también sugiere el tipo, salvo que ya se haya elegido otro a mano.
+    if (!eligioCategoria.current && sugerida && (!eligioTipo.current || sugerida.tipo === tipo)) {
+      setCategoriaId(sugerida.id);
+      setTipo(sugerida.tipo);
+    }
     if (!eligioCuenta.current && cuentasVisibles.some((c) => c.id === sugerencia.cuentaId)) {
       setCuentaId(sugerencia.cuentaId);
     }
@@ -132,12 +160,15 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
       await alGuardar(validacion.data);
       if (esNuevo) {
         recordarCuenta(validacion.data.cuentaId);
-        // Listo para el siguiente: se mantienen la fecha y la cuenta.
+        // Listo para el siguiente: se mantienen la fecha y la cuenta. El tipo vuelve a Gasto, el
+        // más frecuente, para que un gasto no quede anotado como ingreso sin querer.
         setMontoTexto('');
         setDescripcion('');
         setCategoriaId(null);
         setNota('');
         setPorRevisar(false);
+        setTipo('Gasto');
+        eligioTipo.current = false;
         eligioCategoria.current = false;
         refMonto.current?.focus();
       }
@@ -158,6 +189,24 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
 
   return (
     <form onSubmit={(e) => void alEnviar(e)} className="space-y-4" noValidate>
+      <div role="radiogroup" aria-label="Tipo de movimiento" className="grid grid-cols-3 gap-2">
+        {TIPOS.map(({ tipo: opcion, titulo, activo }) => (
+          <button
+            key={opcion}
+            type="button"
+            role="radio"
+            aria-checked={tipo === opcion}
+            className={`boton px-2 ${tipo === opcion ? `${activo} border-transparent text-white dark:text-black` : ''}`}
+            onClick={() => alCambiarTipo(opcion)}
+          >
+            {titulo}
+          </button>
+        ))}
+      </div>
+      {tipo === 'Traspaso' && (
+        <p className="text-texto-suave">Plata entre tus propias cuentas: no suma a ingresos ni a gastos.</p>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="mov-monto" className="etiqueta">
@@ -170,7 +219,7 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
             inputMode="numeric"
             autoComplete="off"
             enterKeyHint="done"
-            className="control montos text-xl font-bold"
+            className={`control montos text-xl font-bold ${colorMonto}`}
             placeholder="$0"
             value={montoTexto}
             aria-invalid={errores.monto ? true : undefined}
@@ -241,10 +290,11 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
 
       <SelectorCategoria
         ref={refCategoria}
-        categorias={categorias}
+        categorias={categoriasVisibles}
         valor={categoriaId}
         alCambiar={alCambiarCategoria}
         error={errores.categoriaId}
+        textoSinResultados={`No hay categorías de ${tipo.toLowerCase()} con ese nombre. ¿Es otro tipo de movimiento?`}
       />
 
       {recordatorio && (
@@ -322,7 +372,7 @@ export function FormularioMovimiento({ movimiento, alGuardar, etiquetaGuardar, e
       {extras}
 
       <button type="submit" className="boton boton-primario w-full text-lg" disabled={guardando}>
-        {guardando ? 'Guardando…' : etiquetaGuardar}
+        {guardando ? 'Guardando…' : (etiquetaGuardar ?? etiquetaDelTipo(tipo))}
       </button>
     </form>
   );

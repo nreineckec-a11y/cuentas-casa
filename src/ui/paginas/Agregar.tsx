@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { calcularCalendario, mesesQueEntranAlPromedio, type MesPorCerrar } from '../../lib/calculos';
 import type { DatosMovimiento } from '../../lib/esquemas';
 import { formatearFechaCorta, formatearMoneda, nombreDelMesConMayuscula } from '../../lib/formato';
+import { textoGuardado } from '../../lib/movimientos';
 import { useAvisos } from '../avisos';
 import { FormularioMovimiento } from '../componentes/FormularioMovimiento';
 import { useDatos } from '../datos';
@@ -15,7 +16,7 @@ function textoDelMes({ mes, ultimaFechaDelMes }: MesPorCerrar): string {
 }
 
 export function PaginaAgregar() {
-  const { movimientos, excluidos, crearMovimiento, borrar, excluirMes } = useDatos();
+  const { movimientos, excluidos, categoriaPorId, crearMovimiento, borrar, excluirMes } = useDatos();
   const { mostrarAviso } = useAvisos();
   const [mesesPorCerrar, setMesesPorCerrar] = useState<MesPorCerrar[]>([]);
 
@@ -23,7 +24,7 @@ export function PaginaAgregar() {
     const fechas = movimientos.map((m) => m.fecha);
     const creado = await crearMovimiento(datos);
     mostrarAviso({
-      texto: `Guardado: ${formatearMoneda(creado.monto)}${creado.descripcion ? ` · ${creado.descripcion}` : ''}`,
+      texto: textoGuardado(categoriaPorId.get(creado.categoriaId)?.tipo, formatearMoneda(creado.monto), creado.descripcion),
       accion: { etiqueta: 'Deshacer', alHacer: () => borrar([creado.id]) },
     });
     const nuevos = mesesQueEntranAlPromedio(
@@ -71,7 +72,7 @@ export function PaginaAgregar() {
           </div>
         </div>
       )}
-      <FormularioMovimiento alGuardar={guardar} etiquetaGuardar="Guardar" />
+      <FormularioMovimiento alGuardar={guardar} />
       <p className="mt-3 hidden text-texto-suave md:block">
         Enter guarda y deja el formulario listo para el siguiente movimiento.
       </p>

@@ -12,6 +12,8 @@ import {
 } from '../src/lib/formato';
 import {
   buscarDescripciones,
+  categoriasDelTipo,
+  etiquetaGuardar,
   cantidadDeFiltros,
   filtrarMovimientos,
   filtroDesdeParams,
@@ -22,6 +24,7 @@ import {
   posiblesDuplicados,
   quitarPrefijoRevisar,
   recordatorioDobleConteo,
+  textoGuardado,
   tienePrefijoRevisar,
 } from '../src/lib/movimientos';
 import type { Movimiento } from '../src/lib/tipos';
@@ -258,6 +261,26 @@ describe('recordatorio de doble conteo', () => {
     expect(recordatorioDobleConteo('giros_efectivo')).toContain('efectivo');
     expect(recordatorioDobleConteo('traspaso_desde')).toBeNull();
     expect(recordatorioDobleConteo(null)).toBeNull();
+  });
+});
+
+describe('tipo de movimiento al anotar', () => {
+  it('la lista muestra solo las categorías del tipo elegido', () => {
+    expect(categoriasDelTipo(categorias, 'Ingreso').map((c) => c.id)).toEqual([INGRESO]);
+    expect(categoriasDelTipo(categorias, 'Gasto').map((c) => c.id)).toEqual([GASTO]);
+    expect(categoriasDelTipo(categorias, 'Traspaso').map((c) => c.id)).toEqual([TRASPASO]);
+  });
+
+  it('el botón dice qué se va a guardar', () => {
+    expect(etiquetaGuardar('Ingreso')).toBe('Guardar ingreso');
+    expect(etiquetaGuardar('Gasto')).toBe('Guardar gasto');
+    expect(etiquetaGuardar('Traspaso')).toBe('Guardar traspaso');
+  });
+
+  it('el aviso confirma el tipo guardado', () => {
+    expect(textoGuardado('Ingreso', '.000', 'Venta')).toBe('Ingreso guardado: .000 · Venta');
+    expect(textoGuardado('Gasto', '.000', '')).toBe('Gasto guardado: .000');
+    expect(textoGuardado(undefined, '.000', '')).toBe('Guardado: .000');
   });
 });
 

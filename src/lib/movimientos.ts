@@ -189,6 +189,26 @@ export function posiblesDuplicados(
     .sort(compararPorFechaDesc);
 }
 
+// ---------------------------------------------------------------------------
+// Tipo de movimiento al anotar
+// ---------------------------------------------------------------------------
+
+/** El tipo no se guarda en el movimiento: elegirlo solo acota la lista de categorías. */
+export function categoriasDelTipo<T extends Pick<Categoria, 'tipo'>>(categorias: readonly T[], tipo: Tipo): T[] {
+  return categorias.filter((c) => c.tipo === tipo);
+}
+
+const NOMBRE_TIPO: Record<Tipo, string> = { Ingreso: 'ingreso', Gasto: 'gasto', Traspaso: 'traspaso' };
+
+export function etiquetaGuardar(tipo: Tipo): string {
+  return `Guardar ${NOMBRE_TIPO[tipo]}`;
+}
+
+export function textoGuardado(tipo: Tipo | undefined, monto: string, descripcion: string): string {
+  const inicio = tipo ? `${tipo} guardado` : 'Guardado';
+  return `${inicio}: ${monto}${descripcion ? ` · ${descripcion}` : ''}`;
+}
+
 /** Recordatorio de la regla de doble conteo, según la función de la categoría. */
 export function recordatorioDobleConteo(rol: Rol | null | undefined): string | null {
   if (rol === 'pago_tarjetas') {

@@ -88,6 +88,7 @@ Publicar: cada `push` a `main` corre los tests y publica en GitHub Pages con `.g
 
 ### Decisiones
 
+- **Anotar por tipo:** el formulario parte eligiendo Gasto, Ingreso o Traspaso, y la lista muestra solo esas categorías. El tipo se deriva de la categoría: no se guarda aparte. Después de guardar vuelve a Gasto, para que un gasto no quede anotado como ingreso sin querer.
 - **Sin Excel en los tests públicos:** ningún monto real queda escrito en el código; la prueba de aceptación los lee del archivo.
 - **`rol` en las categorías:** marca las especiales (traspaso desde y hacia, pago de tarjetas, giros de efectivo). Así, renombrarlas no rompe el traído neto ni los recordatorios de doble conteo. No cambian de tipo, no se fusionan en otra ni se borran.
 - **Fusionar:** solo categorías del mismo tipo, porque entre tipos distintos cambiarían los totales. El destino hereda el presupuesto si no tiene. Las cuentas no se fusionan: se archivan, y se borran si no tienen movimientos.
