@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Datos financieros y nombres de terceros: nunca al repositorio.
+datos/
+*.db
+*.db-wal
+*.db-shm
+*.xlsx
+
+.claude/
+cuentas-casa-respaldo-*.json

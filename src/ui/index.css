@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --fondo: #f4f4f0;
+  --superficie: #ffffff;
+  --superficie-2: #ebebe6;
+  --borde: #767b85;
+  --borde-suave: #d4d5d0;
+  --texto: #16181d;
+  --texto-suave: #4a4f57;
+  --primario: #0b5cad;
+  --sobre-primario: #ffffff;
+  --ingreso: #0a6b3b;
+  --gasto: #b3261e;
+  --traspaso: #555b64;
+  --aviso-fondo: #fff4cc;
+  --aviso-texto: #4d3b00;
+  --revisar-fondo: #fff8dc;
+  --error: #b3261e;
+  --foco: #0b5cad;
+  /* Gráficos: validados para daltonismo contra --superficie (ver README). */
+  --barra-ingreso: #0a6b3b;
+  --barra-gasto: #eb6834;
+  --estado-bien: #0ca30c;
+  --estado-cerca: #fab219;
+  --estado-excedido: #d03b3b;
+  --serie-0: #2a78d6;
+  --serie-1: #eb6834;
+  --serie-2: #1baf7a;
+  --serie-3: #eda100;
+  --serie-4: #e87ba4;
+  --serie-5: #008300;
+  --serie-6: #6250d6;
+  --serie-7: #e34948;
+  color-scheme: light;
+}
+
+.dark {
+  --fondo: #14161a;
+  --superficie: #1e2126;
+  --superficie-2: #2a2e35;
+  --borde: #8b919b;
+  --borde-suave: #3a3f47;
+  --texto: #f3f4f6;
+  --texto-suave: #c3c7ce;
+  --primario: #7cb7ff;
+  --sobre-primario: #08203c;
+  --ingreso: #5fd39a;
+  --gasto: #ff8a80;
+  --traspaso: #b5bac2;
+  --aviso-fondo: #3a3010;
+  --aviso-texto: #ffe9a8;
+  --revisar-fondo: #33300f;
+  --error: #ff8a80;
+  --foco: #7cb7ff;
+  --barra-ingreso: #008300;
+  --barra-gasto: #e66767;
+  --serie-0: #3987e5;
+  --serie-1: #d95926;
+  --serie-2: #199e70;
+  --serie-3: #c98500;
+  --serie-4: #d55181;
+  --serie-5: #008300;
+  --serie-6: #9085e9;
+  --serie-7: #e66767;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-borde: var(--borde);
+  --color-borde-suave: var(--borde-suave);
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+  --color-primario: var(--primario);
+  --color-sobre-primario: var(--sobre-primario);
+  --color-ingreso: var(--ingreso);
+  --color-gasto: var(--gasto);
+  --color-traspaso: var(--traspaso);
+  --color-aviso-fondo: var(--aviso-fondo);
+  --color-aviso-texto: var(--aviso-texto);
+  --color-revisar-fondo: var(--revisar-fondo);
+  --color-error: var(--error);
+  --color-barra-ingreso: var(--barra-ingreso);
+  --color-barra-gasto: var(--barra-gasto);
+  --color-estado-bien: var(--estado-bien);
+  --color-estado-cerca: var(--estado-cerca);
+  --color-estado-excedido: var(--estado-excedido);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--foco);
+    outline-offset: 2px;
+  }
+
+  dialog {
+    margin: 0;
+    color: inherit;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+}
+
+@layer components {
+  .control {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.0625rem;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1.5px solid var(--borde);
+    border-radius: 0.5rem;
+  }
+
+  .control::placeholder {
+    color: var(--texto-suave);
+    opacity: 1;
+  }
+
+  .control[aria-invalid="true"] {
+    border-color: var(--error);
+    border-width: 2px;
+  }
+
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1.5px solid var(--borde);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .boton:hover:not(:disabled) {
+    background: var(--superficie-2);
+  }
+
+  .boton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .boton-primario {
+    color: var(--sobre-primario);
+    background: var(--primario);
+    border-color: var(--primario);
+  }
+
+  .boton-primario:hover:not(:disabled) {
+    background: var(--primario);
+    filter: brightness(1.12);
+  }
+
+  .boton[aria-pressed="true"],
+  .boton[aria-pressed="true"]:hover:not(:disabled) {
+    color: var(--sobre-primario);
+    background: var(--primario);
+    border-color: var(--primario);
+  }
+
+  .boton-peligro {
+    color: var(--gasto);
+    border-color: var(--gasto);
+  }
+
+  .etiqueta {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+
+  .montos {
+    font-variant-numeric: tabular-nums;
+  }
+}
